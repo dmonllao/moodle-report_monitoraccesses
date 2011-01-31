@@ -1,0 +1,16 @@
+##
+# Admin report to check which users are logged into moodle between defined time ranges
+#
+# @copyright David Monllao <david.monllao@gmail.com>
+# @license http://www.gnu.org/licenses/gpl.html
+##
+
+Allow users (new capability defined report/monitoraccesses:view, available to admins by default) to 
+monitor accesses of the selected users from the selected courses between the selected 
+time ranges (until 3) and the selected days of the year. It counts the time each selected user has passed 
+connected to Moodle between the selected ranges, if the user didn't logout it considers the (login + session
+timeout) as logout time.
+
+The necessary queries to extract the data could take a lot of time depending on number of users/usage of 
+the Moodle installation.
+
