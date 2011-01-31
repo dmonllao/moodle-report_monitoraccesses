@@ -19,4 +19,3 @@ class monitoraccesses_courseslist_form_class extends monitoraccesses_form_class 
     }
 }
 
-?>

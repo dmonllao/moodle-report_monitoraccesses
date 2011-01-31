@@ -28,4 +28,3 @@ class monitoraccesses_selectstrips_class extends monitoraccesses_class {
 
 }
 
-?>

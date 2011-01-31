@@ -65,4 +65,3 @@ class monitoraccesses_userslist_class extends monitoraccesses_class {
 
 }
 
-?>

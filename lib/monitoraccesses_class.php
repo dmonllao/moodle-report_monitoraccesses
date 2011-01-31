@@ -102,4 +102,3 @@ abstract class monitoraccesses_class {
     }
 }
 
-?>

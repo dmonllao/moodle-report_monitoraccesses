@@ -25,4 +25,4 @@ $string['titleselectstrips'] = 'Select dates and strips';
 $string['titleuserslist'] = 'Select courses and users';
 $string['totime'] = 'To';
 $string['wrongdates'] = 'check the strip number $a dates';
-?>
+

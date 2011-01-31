@@ -25,4 +25,4 @@ $string['titleselectstrips'] = 'Selecciona dates i franges';
 $string['titleuserslist'] = 'Selecciona usuaris i cursos';
 $string['totime'] = 'Fins a';
 $string['wrongdates'] = 'comprova la franja número $a';
-?>
+

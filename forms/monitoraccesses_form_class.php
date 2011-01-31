@@ -50,4 +50,3 @@ class monitoraccesses_form_class extends moodleform {
 
 }
 
-?>

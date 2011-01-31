@@ -343,4 +343,3 @@ class monitoraccesses_results_class extends monitoraccesses_class {
     }
 }
 
-?>

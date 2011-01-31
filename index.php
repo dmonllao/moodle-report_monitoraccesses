@@ -3,7 +3,7 @@
 /**
  * Monitor accesses report main controller
  *
- * @license      GPL 2.0    http://www.gnu.org/licenses/gpl-2.0.txt
+ * @license      http://www.gnu.org/licenses/gpl.html
  * @copyright    David Monllaó <david.monllao@urv.cat>
  */
 

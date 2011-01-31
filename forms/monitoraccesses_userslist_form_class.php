@@ -16,4 +16,3 @@ class monitoraccesses_userslist_form_class extends monitoraccesses_form_class {
     }
 }
 
-?>

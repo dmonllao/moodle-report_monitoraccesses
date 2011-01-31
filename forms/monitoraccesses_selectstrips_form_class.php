@@ -291,4 +291,3 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
 
 }
 
-?>

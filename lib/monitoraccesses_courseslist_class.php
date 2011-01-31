@@ -66,4 +66,3 @@ class monitoraccesses_courseslist_class extends monitoraccesses_class {
     }
 }
 
-?>
