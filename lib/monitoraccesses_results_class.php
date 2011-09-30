@@ -147,6 +147,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                         unset($found);
                         unset($alreadyadded);
                         unset($nextlogout);
+                        unset($setsessiontimeout);
 
                         // Iterate through the strips
                         // TODO: Try to put logout iteration outside the $logins iteration
@@ -182,13 +183,32 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
                                 // If it hasn't coincidences, add it
                                 if (empty($alreadyadded)) {
+
+                                    // Login time
                                     $accesses[$userid][$log->time]->login = $log->time;
+
+                                    // Checking if there are logins between this login and the next logout
+                                    // Useful to detect logins without logout and posterior login with logout
+                                    if (!empty($nextlogout)) {
+                                        foreach ($logins as $nextlogin) {
+                                            if ($nextlogin->time > $log->time && $nextlogin->time < $nextlogout) {
+                                                $setsessiontimeout = true;
+                                                break;
+                                            }
+                                        }
+                                    }
 
                                     $logday = mktime('00', '00', '00',
                                                         date('m', $log->time),
                                                         date('d', $log->time),
                                                         date('Y', $log->time));
-                                    if (!empty($nextlogout) && $nextlogout < ($logday + DAYSECS)) {
+
+                                    // If there are two consecutive logins without logout
+                                    if (!empty($setsessiontimeout)) {
+                                        $accesses[$userid][$log->time]->logout = $log->time + $CFG->sessiontimeout;
+
+                                    // The next logout
+                                    } else if (!empty($nextlogout) && $nextlogout < ($logday + DAYSECS)) {
                                         $accesses[$userid][$log->time]->logout = $nextlogout;
 
                                     // If there are no next logout take the sessiontimeout as logout
