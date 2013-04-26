@@ -97,139 +97,99 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         // Prepare data to select
         $selectedcourses = implode(',', $SESSION->monitoraccessesreport->courses);
 
-
         // Stores init and end timestamps
-        $timestamps = array();
+        $selectedranges = array();
         foreach ($SESSION->monitoraccessesreport->strips as $strip) {
 
             if (!empty($strip->dates)) {
                 foreach ($strip->dates as $date) {
                     $dateinit = $date + $strip->from;
-                    $timestamps[$dateinit]->from = $dateinit;
-                    $timestamps[$dateinit]->to = $date + $strip->to;
+                    $selectedranges[$dateinit]->from = $dateinit;
+                    $selectedranges[$dateinit]->to = $date + $strip->to;
                 }
             }
         }
 
-        if (empty($timestamps)) {
+        if (empty($selectedranges)) {
             return false;
         }
 
-        ksort($timestamps);
+        ksort($selectedranges);
 
-        // Looking for the first and the last selected strips
-        $first = reset($timestamps);
-        $last = end($timestamps);
+        // Looking for the first and the last selected strips, hopefully
+        // users will mostly choose just a few days.
+        $first = reset($selectedranges);
+        $last = end($selectedranges);
 
-        // One query per user searching only between the first and the last selected days
+        // One query per user searching only between the first and the last selected days.
         if ($SESSION->monitoraccessesreport->users) {
 
-            // Array to store the users connections between the selecet strips
+            // Array to store the users connections between the selected strips
             $accesses = array();
 
             foreach ($SESSION->monitoraccessesreport->users as $userid) {
 
                 // Getting data ordered by time to improve the iteration time
-                $sql = "SELECT l.time FROM {$CFG->prefix}log l
+                $sql = "SELECT l.id, l.time, l.action FROM {$CFG->prefix}log l
                         WHERE l.userid = '$userid'
-                        AND l.module = 'user' AND l.action = 'login'
                         AND l.time > '{$first->from}' AND l.time < '{$last->to}'
                         ORDER BY l.time ASC";
-                $logins = get_records_sql($sql);
-
-                // Getting logout times
-                $logouts = get_records_sql(str_replace('login', 'logout', $sql));
-
-                // Really HEAVY iteration
-                if ($logins) {
-                    foreach ($logins as $log) {
-
-                        unset($found);
-                        unset($alreadyadded);
-                        unset($nextlogout);
-                        unset($setsessiontimeout);
-
-                        // Iterate through the strips
-                        // TODO: Try to put logout iteration outside the $logins iteration
-                        $date = reset($timestamps);
-
-                        do {
-
-                            // If the login time is between the init and end timestamps
-                            if ($log->time > $date->from && $log->time < $date->to) {
-
-                                $found = 1;
-
-                                // Get the next logout
-                                if ($logouts) {
-                                    foreach ($logouts as $logout) {
-
-                                        // TODO: unset the passed logouts to improve iterations
-                                        if ($logout->time > $log->time && empty($nextlogout)) {
-                                            $nextlogout = $logout->time;
-                                        }
-                                    }
-                                }
-
-                                // We must check the already found connections to ensure that there aren't duplicate entries
-                                if (!empty($accesses[$userid])) {
-                                    foreach ($accesses[$userid] as $striptimes) {
-
-                                        if ($log->time > $striptimes->login && $log->time < $striptimes->logout) {
-                                            $alreadyadded = true;
-                                        }
-                                    }
-                                }
-
-                                // If it hasn't coincidences, add it
-                                if (empty($alreadyadded)) {
-
-                                    // Login time
-                                    $accesses[$userid][$log->time]->login = $log->time;
-
-                                    // Checking if there are logins between this login and the next logout
-                                    // Useful to detect logins without logout and posterior login with logout
-                                    if (!empty($nextlogout)) {
-                                        foreach ($logins as $nextlogin) {
-                                            if ($nextlogin->time > $log->time && $nextlogin->time < $nextlogout) {
-                                                $setsessiontimeout = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    $logday = mktime('00', '00', '00',
-                                                        date('m', $log->time),
-                                                        date('d', $log->time),
-                                                        date('Y', $log->time));
-
-                                    // If there are two consecutive logins without logout
-                                    if (!empty($setsessiontimeout)) {
-                                        $accesses[$userid][$log->time]->logout = $log->time + $CFG->sessiontimeout;
-
-                                    // The next logout
-                                    } else if (!empty($nextlogout) && $nextlogout < ($logday + DAYSECS)) {
-                                        $accesses[$userid][$log->time]->logout = $nextlogout;
-
-                                    // If there are no next logout take the sessiontimeout as logout
-                                    } else {
-                                        $accesses[$userid][$log->time]->logout = $log->time + $CFG->sessiontimeout;
-                                    }
-
-                                    // Limiting the logout to the strip end
-                                    if ($accesses[$userid][$log->time]->logout > $date->to) {
-                                        $accesses[$userid][$log->time]->logout = $date->to;
-                                    }
-                                }
-                            }
-
-                            // Getting the next strip
-                            $date = next($timestamps);
-
-                        } while (empty($found) && $date);
-                    }
+                if (!$logs = get_records_sql($sql)) {
+                    continue;
                 }
 
+                // Iterate through the strips
+                $date = reset($selectedranges);
+                do {
+
+                    unset($sessioninit);
+
+                    // We need to keep track of the last log to check against the session timeout.
+                    unset($lastlog);
+
+                    // Really heavy iteration, better to force PHP to work than the database.
+                    foreach ($logs as $log) {
+                        if ($log->time > $date->from && $log->time < $date->to) {
+
+                            // First log counts as initial login.
+                            if (empty($sessioninit)) {
+                                $sessioninit = $log->time;
+                                $accesses[$userid][$sessioninit]->login = $log->time;
+
+                                // We store the first log also as the last one.
+                                $accesses[$userid][$sessioninit]->logout = $log->time;
+                                $lastlog = $log->time;
+                            }
+
+                            // If the action is logout new register and unset $sessioninit to create a new one.
+                            if ($action === 'logout') {
+                                // Marking it as the last one.
+                                $accesses[$userid][$sessioninit]->logout = $log->time;
+                                unset($sessioninit);
+                            }
+
+                            // Check site timeout setting to consider the session as closed if there is
+                            // too much difference between logs.
+                            if (!empty($lastlog) && $lastlog + $CFG->sessiontimeout < $log->time) {
+                                unset($sessioninit);
+                            }
+
+                            // Only if $sessioninit has not been reset.
+                            if (!empty($sessioninit)) {
+
+                                // This is the last log at the moment, so it counts as logout
+                                // it will be overwriten by the next log if it is not a log out
+                                // nor the session time expired.
+                                $accesses[$userid][$sessioninit]->logout = $log->time;
+                                $lastlog = $log->time;
+                            }
+                        }
+                    }
+
+                    // Getting the next strip.
+                    $date = next($selectedranges);
+
+               } while ($date);
             }
 
             $this->bus = $accesses;
