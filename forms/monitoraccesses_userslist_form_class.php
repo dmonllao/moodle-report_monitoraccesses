@@ -1,4 +1,6 @@
-<?php // $Id$
+<?php
+
+require_once($CFG->dirroot . '/report/monitoraccesses/forms/monitoraccesses_form_class.php');
 
 class monitoraccesses_userslist_form_class extends monitoraccesses_form_class {
 

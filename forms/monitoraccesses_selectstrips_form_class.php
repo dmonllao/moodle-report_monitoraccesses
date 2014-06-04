@@ -1,6 +1,7 @@
-<?php // $Id$
+<?php
 
 require_once($CFG->dirroot.'/calendar/lib.php');
+require_once($CFG->dirroot . '/report/monitoraccesses/forms/monitoraccesses_form_class.php');
 
 class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class {
 

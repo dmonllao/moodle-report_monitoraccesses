@@ -18,6 +18,7 @@ $string['logintime'] = 'Connection time';
 $string['monitoraccesses:view'] = 'View monitor accesses report';
 $string['nostrips'] = 'You must select at least one strip';
 $string['notaccessesfound'] = 'The selected users hasn\'t accessed between the selected dates';
+$string['pluginname'] = 'Monitor Accesses';
 $string['title'] = 'Monitor Accesses';
 $string['titlecourseslist'] = 'Select courses and users';
 $string['titleresults'] = 'Results';

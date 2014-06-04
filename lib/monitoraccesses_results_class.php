@@ -84,7 +84,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
     public function process() {
 
-        global $CFG, $SESSION;
+        global $CFG, $SESSION, $DB;
 
         // If there are no selected strips don't store
         if (empty($SESSION->monitoraccessesreport->strips)) {
@@ -134,7 +134,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                         WHERE l.userid = '$userid'
                         AND l.time > '{$first->from}' AND l.time < '{$last->to}'
                         ORDER BY l.time ASC";
-                if (!$logs = get_records_sql($sql)) {
+                if (!$logs = $DB->get_records_sql($sql)) {
                     continue;
                 }
 
@@ -218,9 +218,9 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
     private function display_user($userid, $userdata) {
 
-        global $CFG;
+        global $CFG, $DB;
 
-        $user = get_record('user', 'id', $userid);
+        $user = $DB->get_record('user', 'id', $userid);
 
         $outputheader = '<div id="user_'.$user->id.'" class="monitoraccesses_userresults">';
 
@@ -282,18 +282,18 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
     private function store_report() {
 
-        global $USER, $SESSION;
+        global $USER, $SESSION, $DB;
 
         // Report
         $ma->userid = $USER->id;
         $ma->timecreated = time();
-        $ma->id = insert_record('monitoraccesses', $ma);
+        $ma->id = $DB->insert_record('monitoraccesses', $ma);
 
         // Courses
         $mac->monitoraccessesid = $ma->id;
         foreach ($SESSION->monitoraccessesreport->courses as $courseid) {
             $mac->courseid = $courseid;
-            if (!insert_record('monitoraccesses_course', $mac)) {
+            if (!$DB->insert_record('monitoraccesses_course', $mac)) {
                 debugging('Can\'t insert into monitoraccessesreport_course'.print_r($mac));
             }
         }
@@ -302,7 +302,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         $mau->monitoraccessesid = $ma->id;
         foreach ($SESSION->monitoraccessesreport->users as $userid) {
             $mau->userid = $userid;
-            if (!insert_record('monitoraccesses_user', $mau)) {
+            if (!$DB->insert_record('monitoraccesses_user', $mau)) {
                 debugging('Can\'t insert into monitoraccessesreport_user'.print_r($mau));
             }
         }
@@ -315,7 +315,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                 $mas->beginseconds = $strip->from;
                 $mas->endseconds = $strip->to;
                 $mas->days = implode(',', $strip->dates);
-                if (!insert_record('monitoraccesses_strip', $mas)) {
+                if (!$DB->insert_record('monitoraccesses_strip', $mas)) {
                     debugging('Can\'t insert into monitoraccessesreport_strip'.print_r($mas));
                 }
             }

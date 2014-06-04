@@ -1,4 +1,4 @@
-<?php // $Id$
+<?php
 
 /**
  * Monitor accesses report main controller
@@ -8,9 +8,9 @@
  */
 
 
-require_once('../../../config.php');
+require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->dirroot.'/admin/report/monitoraccesses/lib/monitoraccesses_class.php');
+require_once($CFG->dirroot.'/report/monitoraccesses/lib/monitoraccesses_class.php');
 
 $action = optional_param('action', 'courseslist', PARAM_ALPHANUM);
 
@@ -20,14 +20,21 @@ $action = optional_param('action', 'courseslist', PARAM_ALPHANUM);
 
 // Permissions checkings
 require_login();
-
-require_capability('report/monitoraccesses:view', get_context_instance(CONTEXT_SYSTEM));
-
+require_capability('report/monitoraccesses:view', context_system::instance());
 
 // Front Controller
-$actionclass = 'monitoraccesses_'.$action.'_class';
+$class = 'monitoraccesses_'.$action.'_class';
+$formclass = 'monitoraccesses_'.$action.'_form_class';
 
-$instance = new $actionclass($action);
+// Requires
+$path = $CFG->dirroot.'/report/monitoraccesses';
+if (file_exists($path.'/lib/'.$class.'.php')) {
+    require_once($path.'/lib/'.$class.'.php');
+}
+if (file_exists($path.'/forms/'.$formclass.'.php')) {
+    require_once($path.'/forms/'.$formclass.'.php');
+}
+$instance = new $class($action);
 
 // Calling the action controller
 $instance->controller();
@@ -39,5 +46,3 @@ $instance->load_form();
 // Displaying results
 $instance->display();
 $instance->display_footer();
-
-?>

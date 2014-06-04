@@ -26,28 +26,25 @@ class monitoraccesses_userslist_class extends monitoraccesses_class {
 
     public function process() {
 
-        global $CFG, $SESSION;
-
-        // TODO: settings.php
-        //$userids = '5';
+        global $CFG, $SESSION, $DB, $OUTPUT;
 
         // Getting courses users
         $selectedcourses = implode(',', $SESSION->monitoraccessesreport->courses);
-        $sql = "SELECT DISTINCT u.id, u.firstname, u.lastname, u.picture
+        $sql = "SELECT DISTINCT u.id, u.firstname, u.lastname, u.picture, u.imagealt, u.email
                 FROM {$CFG->prefix}context ctx
                 JOIN {$CFG->prefix}role_assignments ra ON ra.contextid = ctx.id
                 JOIN {$CFG->prefix}user u ON u.id = ra.userid
                 WHERE ctx.contextlevel = '50' AND ctx.instanceid IN (".$selectedcourses.")
                 ORDER BY u.lastname ASC";
 
-        $data = get_records_sql($sql);
+        $data = $DB->get_records_sql($sql);
 
         // The user value must show the picture
         if ($data) {
             foreach ($data as $key => $user) {
 
                 $div = '<div class="monitoraccesses_user">';
-                $div.= $user->firstname.' '.$user->lastname.' '.print_user_picture($user->id, '1', $user->picture, 0, true);
+                $div.= $user->firstname.' '.$user->lastname.' '.$OUTPUT->user_picture($user, '1', $user->picture, 0, true);
                 $div.= '</div>';
 
                 $data[$key]->value = $div;

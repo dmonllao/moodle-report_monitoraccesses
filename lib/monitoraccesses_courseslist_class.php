@@ -5,12 +5,12 @@ class monitoraccesses_courseslist_class extends monitoraccesses_class {
 
     public function controller() {
 
-        global $CFG, $SESSION;
+        global $CFG, $SESSION, $DB;
 
         // Load last report
         if (empty($SESSION->monitoraccessesreport)) {
 
-            $last = get_record_sql("SELECT id FROM {$CFG->prefix}monitoraccesses WHERE timecreated =
+            $last = $DB->get_record_sql("SELECT id FROM {$CFG->prefix}monitoraccesses WHERE timecreated =
                                     (SELECT max(timecreated) FROM {$CFG->prefix}monitoraccesses)");
 
             if ($last) {
@@ -23,10 +23,10 @@ class monitoraccesses_courseslist_class extends monitoraccesses_class {
                 $stripssql = "SELECT * FROM {$CFG->prefix}monitoraccesses_strip WHERE monitoraccessesid = '$last->id'
                               ORDER BY id ASC";
 
-                $SESSION->monitoraccessesreport->courses = get_records_sql($coursessql);
-                $SESSION->monitoraccessesreport->users = get_records_sql($userssql);
+                $SESSION->monitoraccessesreport->courses = $DB->get_records_sql($coursessql);
+                $SESSION->monitoraccessesreport->users = $DB->get_records_sql($userssql);
 
-                $strips = get_records_sql($stripssql);
+                $strips = $DB->get_records_sql($stripssql);
                 if ($strips) {
                     $i = 1;
                     foreach ($strips as $strip) {
@@ -47,14 +47,14 @@ class monitoraccesses_courseslist_class extends monitoraccesses_class {
 
     public function process() {
 
-        global $CFG;
+        global $CFG, $DB;
 
         $sql = "SELECT id, fullname as value
                 FROM {$CFG->prefix}course
                 WHERE id != 1
                 ORDER BY sortorder ASC";
 
-        $this->bus = get_records_sql($sql);
+        $this->bus = $DB->get_records_sql($sql);
     }
 
 

@@ -2,7 +2,7 @@
 
 require_once($CFG->libdir.'/formslib.php');
 
-class monitoraccesses_form_class extends moodleform {
+abstract class monitoraccesses_form_class extends moodleform {
 
     /**
      * Child classes will call it before any other thing

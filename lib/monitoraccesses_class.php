@@ -1,25 +1,6 @@
 <?php // $Id$
 
 
-/**
- * Requires automatically the requested classes
- *
- * @param  string  $class
- */
-function __autoload($class) {
-
-    global $CFG;
-
-    $path = $CFG->dirroot.'/admin/report/monitoraccesses';
-
-    if (file_exists($path.'/lib/'.$class.'.php')) {
-        require_once($path.'/lib/'.$class.'.php');
-    } else if (file_exists($path.'/forms/'.$class.'.php')) {
-        require_once($path.'/forms/'.$class.'.php');
-    }
-}
-
-
 abstract class monitoraccesses_class {
 
     protected $action;
@@ -42,7 +23,7 @@ abstract class monitoraccesses_class {
 
         global $CFG;
 
-        $reportpath = $CFG->wwwroot.'/admin/report/monitoraccesses/index.php';
+        $reportpath = $CFG->wwwroot.'/report/monitoraccesses/index.php';
 
         $formname = str_replace('_class', '_form_class', get_class($this));
 
@@ -74,7 +55,7 @@ abstract class monitoraccesses_class {
      */
     public function display() {
 
-        global $CFG;
+        global $CFG, $OUTPUT;
 
 
         // The AJAX petitions shouldn't display the header
@@ -84,10 +65,10 @@ abstract class monitoraccesses_class {
             // Printing the header
             admin_externalpage_setup('monitoraccesses');
 
-            $CFG->stylesheets[] = $CFG->wwwroot.'/admin/report/monitoraccesses/styles.css';
-            admin_externalpage_print_header();
+            $CFG->stylesheets[] = $CFG->wwwroot.'/report/monitoraccesses/styles.css';
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading(get_string('title'.$this->action, 'report_monitoraccesses'));
 
-            print_heading(get_string('title'.$this->action, 'report_monitoraccesses'));
         }
 
         // Outputs the form if exists
@@ -98,7 +79,8 @@ abstract class monitoraccesses_class {
 
 
     public function display_footer() {
-        admin_externalpage_print_footer();
+        global $OUTPUT;
+        echo $OUTPUT->footer();
     }
 }
 
