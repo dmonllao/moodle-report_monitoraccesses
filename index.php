@@ -17,10 +17,14 @@ $action = optional_param('action', 'courseslist', PARAM_ALPHANUM);
 
 ///////////////////////////////////////////////
 
-
 // Permissions checkings
+$context = context_system::instance();
 require_login();
-require_capability('report/monitoraccesses:view', context_system::instance());
+require_capability('report/monitoraccesses:view', $context);
+
+$PAGE->set_url('/report/monitoraccesses/index.php', array('action' => $action));
+$PAGE->set_pagelayout('report');
+$PAGE->set_context($context);
 
 // Front Controller
 $class = 'monitoraccesses_'.$action.'_class';

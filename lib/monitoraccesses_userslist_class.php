@@ -9,7 +9,7 @@ class monitoraccesses_userslist_class extends monitoraccesses_class {
 
         // Getting the selected courses
         unset($SESSION->monitoraccessesreport->courses);
-        foreach ($_POST as $key => $var) {
+        foreach ($_REQUEST as $key => $var) {
 
             if (strstr($key, 'course_') != false) {
 
@@ -20,7 +20,6 @@ class monitoraccesses_userslist_class extends monitoraccesses_class {
                 $SESSION->monitoraccessesreport->courses[$courseid] = $courseid;
             }
         }
-
     }
 
 
@@ -44,7 +43,7 @@ class monitoraccesses_userslist_class extends monitoraccesses_class {
             foreach ($data as $key => $user) {
 
                 $div = '<div class="monitoraccesses_user">';
-                $div.= $user->firstname.' '.$user->lastname.' '.$OUTPUT->user_picture($user, '1', $user->picture, 0, true);
+                $div.= $user->firstname.' '.$user->lastname.' '.$OUTPUT->user_picture($user);
                 $div.= '</div>';
 
                 $data[$key]->value = $div;

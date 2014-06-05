@@ -15,6 +15,7 @@ class monitoraccesses_userslist_form_class extends monitoraccesses_form_class {
         $this->_form->addElement('submit', 'submitusers', get_string('selectstrips', 'report_monitoraccesses'));
 
         $this->_form->addElement('hidden', 'action', 'selectstrips');
+        $this->_form->setType('action', PARAM_ALPHA);
     }
 }
 

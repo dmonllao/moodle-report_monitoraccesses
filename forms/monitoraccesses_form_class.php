@@ -11,12 +11,6 @@ abstract class monitoraccesses_form_class extends moodleform {
      * @param  mixed   $results
      */
     public function __construct($url, $results) {
-
-        global $CFG;
-
-        require_js($CFG->wwwroot.'/admin/report/monitoraccesses/lib/lib.js');
-        require_js(array('yui_yahoo', 'yui_event', 'yui_connection'));
-
         $this->results = $results;
         parent::__construct($url);
     }
