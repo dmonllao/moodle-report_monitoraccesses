@@ -19,8 +19,8 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
                 $fromname = 'from_'.$stripid;
                 $toname = 'to_'.$stripid;
-                $from = optional_param('from_'.$stripid, false, PARAM_INT);
-                $to = optional_param('to_'.$stripid, false, PARAM_INT);
+                $from = optional_param_array('from_'.$stripid, false, PARAM_INT);
+                $to = optional_param_array('to_'.$stripid, false, PARAM_INT);
 
                 // gmmktime because it's only to sum
                 $fromtimestamp = gmmktime($from['from_'.$stripid.'_hours'], $from['from_'.$stripid.'_mins'], '00', '01', '01', '1970');
@@ -31,6 +31,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                     $errors[] = get_string("wrongdates", "report_monitoraccesses", $stripid);
                 }
 
+                $SESSION->monitoraccessesreport->strips[$stripid] = new stdClass();
                 $SESSION->monitoraccessesreport->strips[$stripid]->from = $fromtimestamp;
                 $SESSION->monitoraccessesreport->strips[$stripid]->to = $totimestamp;
             }
@@ -69,12 +70,12 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         // Redirect to the strips selector if there are problems
         if ($errors) {
             $errorstr = ucfirst(implode(' '.get_string("and", "report_monitoraccesses").' ', $errors));
-            redirect($CFG->wwwroot.'/admin/report/monitoraccesses/index.php?action=selectstrips&amp;samesession=1', $errorstr, 10);
+            redirect($CFG->wwwroot.'/report/monitoraccesses/index.php?action=selectstrips&amp;samesession=1', $errorstr, 10);
         }
 
         // If there are no selected strips redirect
         if (empty($SESSION->monitoraccessesreport->strips)) {
-            redirect($CFG->wwwroot.'/admin/report/monitoraccesses/index.php?action=selectstrips&amp;samesession=1',
+            redirect($CFG->wwwroot.'/report/monitoraccesses/index.php?action=selectstrips&amp;samesession=1',
                      get_string("nostrips", "report_monitoraccesses"),
                      10);
         }
@@ -104,6 +105,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
             if (!empty($strip->dates)) {
                 foreach ($strip->dates as $date) {
                     $dateinit = $date + $strip->from;
+                    $selectedranges[$dateinit] = new stdClass();
                     $selectedranges[$dateinit]->from = $dateinit;
                     $selectedranges[$dateinit]->to = $date + $strip->to;
                 }
@@ -205,7 +207,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         parent::display();
 
         if (!$this->bus) {
-            redirect($CFG->wwwroot.'/admin/report/monitoraccesses/index.php',
+            redirect($CFG->wwwroot.'/report/monitoraccesses/index.php',
                      get_string('notaccessesfound', 'report_monitoraccesses'),
                      10);
         }
@@ -285,11 +287,13 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         global $USER, $SESSION, $DB;
 
         // Report
+        $ma = new stdClass();
         $ma->userid = $USER->id;
         $ma->timecreated = time();
         $ma->id = $DB->insert_record('monitoraccesses', $ma);
 
         // Courses
+        $mac = new stdClass();
         $mac->monitoraccessesid = $ma->id;
         foreach ($SESSION->monitoraccessesreport->courses as $courseid) {
             $mac->courseid = $courseid;
@@ -299,6 +303,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         }
 
         // Users
+        $mau = new stdClass();
         $mau->monitoraccessesid = $ma->id;
         foreach ($SESSION->monitoraccessesreport->users as $userid) {
             $mau->userid = $userid;
@@ -308,6 +313,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         }
 
         // Strips
+        $mas = new stdClass();
         $mas->monitoraccessesid = $ma->id;
         foreach ($SESSION->monitoraccessesreport->strips as $strip) {
 
