@@ -23,6 +23,7 @@ class monitoraccesses_courseslist_class extends monitoraccesses_class {
                 $stripssql = "SELECT * FROM {$CFG->prefix}monitoraccesses_strip WHERE monitoraccessesid = '$last->id'
                               ORDER BY id ASC";
 
+                $SESSION->monitoraccessesreport = new stdClass();
                 $SESSION->monitoraccessesreport->courses = $DB->get_records_sql($coursessql);
                 $SESSION->monitoraccessesreport->users = $DB->get_records_sql($userssql);
 
@@ -30,6 +31,7 @@ class monitoraccesses_courseslist_class extends monitoraccesses_class {
                 if ($strips) {
                     $i = 1;
                     foreach ($strips as $strip) {
+                        $SESSION->monitoraccessesreport->strips[$i] = new stdClass();
                         $SESSION->monitoraccessesreport->strips[$i]->from = $strip->beginseconds;
                         $SESSION->monitoraccessesreport->strips[$i]->to = $strip->endseconds;
 
