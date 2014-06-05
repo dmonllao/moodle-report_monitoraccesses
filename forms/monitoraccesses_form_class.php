@@ -27,7 +27,7 @@ abstract class monitoraccesses_form_class extends moodleform {
 
         $storedprefix = $keyprefix.'s';
 
-        $attrs = array('class' => 'dirtyignore');
+        $attrs = array('class' => 'ignoredirty');
 
         if ($this->results) {
             foreach ($this->results as $element) {
