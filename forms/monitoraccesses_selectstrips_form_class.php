@@ -60,7 +60,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
 
 
             // Big strip div
-            $this->_form->addElement('html', '<div id="dates_'.$stripid.'" class="'.$class.'">');
+            $this->_form->addElement('html', '<div id="togglecontents_'.$stripid.'" class="'.$class.'">');
 
             // Each strip has it's own from and to selectors
             $selects = array('from', 'to');
@@ -122,8 +122,12 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
         // The required JS.
         $PAGE->requires->yui_module(
             'moodle-report_monitoraccesses-selectstrips',
-            'M.report_monitoraccesses.init_selectstrips',
-            array(array('nstrips' => $nstrips, 'minusicon' => $minusicon->out(), 'plusicon' => $plusicon->out()))
+            'M.report_monitoraccesses.init_selectstrips'
+        );
+        $PAGE->requires->yui_module(
+            'moodle-report_monitoraccesses-toggle',
+            'M.report_monitoraccesses.init_toggle',
+            array(array('minusicon' => $minusicon->out(), 'plusicon' => $plusicon->out()))
         );
         $PAGE->requires->strings_for_js(
             array('show', 'hide'), 'moodle');

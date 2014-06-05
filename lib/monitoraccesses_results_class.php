@@ -132,10 +132,11 @@ class monitoraccesses_results_class extends monitoraccesses_class {
             foreach ($SESSION->monitoraccessesreport->users as $userid) {
 
                 // Getting data ordered by time to improve the iteration time
-                $sql = "SELECT l.id, l.time, l.action FROM {$CFG->prefix}log l
-                        WHERE l.userid = '$userid'
+                $sql = "SELECT l.id, l.time, l.action, l.course FROM {$CFG->prefix}log l
+                        WHERE l.userid = '$userid' AND l.course IN ($selectedcourses)
                         AND l.time > '{$first->from}' AND l.time < '{$last->to}'
                         ORDER BY l.time ASC";
+                        var_dump($sql);
                 if (!$logs = $DB->get_records_sql($sql)) {
                     continue;
                 }
@@ -151,6 +152,9 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
                     // Really heavy iteration, better to force PHP to work than the database.
                     foreach ($logs as $log) {
+
+                        $action = $log->action;
+
                         if ($log->time > $date->from && $log->time < $date->to) {
 
                             // First log counts as initial login.
@@ -202,7 +206,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
     public function display() {
 
-        global $CFG, $SESSION;
+        global $CFG, $SESSION, $PAGE, $OUTPUT;
 
         parent::display();
 
@@ -212,6 +216,16 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                      10);
         }
 
+        $minusicon = $OUTPUT->pix_url('t/switch_minus');
+        $plusicon = $OUTPUT->pix_url('t/switch_plus');
+        $PAGE->requires->yui_module(
+            'moodle-report_monitoraccesses-toggle',
+            'M.report_monitoraccesses.init_toggle',
+            array(array('minusicon' => $minusicon->out(), 'plusicon' => $plusicon->out()))
+        );
+        $PAGE->requires->strings_for_js(
+            array('show', 'hide'), 'moodle');
+
         foreach ($this->bus as $userid => $userdata) {
             $this->display_user($userid, $userdata);
         }
@@ -220,27 +234,28 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
     private function display_user($userid, $userdata) {
 
-        global $CFG, $DB;
+        global $CFG, $DB, $OUTPUT;
 
-        $user = $DB->get_record('user', 'id', $userid);
+        $user = $DB->get_record('user', array('id' => $userid));
 
         $outputheader = '<div id="user_'.$user->id.'" class="monitoraccesses_userresults">';
 
         // To hide/show
-        $outputheader.= '<input type="image" src="'.$CFG->pixpath.'/t/switch_plus.gif" '.
+        $plusicon = $OUTPUT->pix_url('t/switch_plus');
+        $outputheader.= '<input type="image" src="' . $plusicon . '" '.
                         'id="togglehide_'.$user->id.'" '.
-                        'onclick="elementToggleHide(this, false, function (el) {return document.getElementById(\'dates_'.$user->id.'\');},'.
                         ' \''.get_string("show").'\', \''.get_string("hide").'\'); return false;" '.
                         'alt="'.get_string('show').'" title="'.get_string('show').'" class="hide-show-image monitoraccesses_button" />';
 
-        $outputheader.= print_user_picture($user->id, '1', $user->picture, 0, true).' '.$user->firstname.' '.$user->lastname;
+        $outputheader.= $OUTPUT->user_picture($user).' '.$user->firstname.' '.$user->lastname;
 
 
         // Print div with the user logins
         $totaltime = 0;
-        $outputdates = '<div id="dates_'.$user->id.'" class="hidden">';
+        $outputdates = '<div id="togglecontents_'.$user->id.'" class="hidden">';
 
         $row = 0;
+        $table = new html_table();
         $table->head = array(get_string("date"),
                              get_string("fromtime", "report_monitoraccesses"),
                              get_string("totime", "report_monitoraccesses"),
@@ -257,7 +272,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
             $row++;
         }
 
-        $outputdates.= print_table($table, true);
+        $outputdates.= html_writer::table($table);
         $outputdates.= '</div>';
 
 
