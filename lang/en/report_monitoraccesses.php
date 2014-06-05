@@ -1,4 +1,4 @@
-<?php // $Id$
+<?php
 
 $string['actionnotfound'] = 'Action not yet supported';
 $string['and'] = 'and';
@@ -19,11 +19,12 @@ $string['monitoraccesses:view'] = 'View monitor accesses report';
 $string['nostrips'] = 'You must select at least one strip';
 $string['notaccessesfound'] = 'The selected users hasn\'t accessed between the selected dates';
 $string['pluginname'] = 'Monitor Accesses';
+$string['tabledata'] = 'Data table, {$a}';
 $string['title'] = 'Monitor Accesses';
 $string['titlecourseslist'] = 'Select courses and users';
 $string['titleresults'] = 'Results';
 $string['titleselectstrips'] = 'Select dates and strips';
 $string['titleuserslist'] = 'Select courses and users';
 $string['totime'] = 'To';
-$string['wrongdates'] = 'check the strip number $a dates';
+$string['wrongdates'] = 'check the strip number {$a} dates';
 

@@ -1,4 +1,4 @@
-<?php // $Id$
+<?php
 
 $string['actionnotfound'] = 'Acció no suportada';
 $string['and'] = 'i';
@@ -19,11 +19,12 @@ $string['monitoraccesses:view'] = 'Veure informe de monitoratge d\'accessos';
 $string['nostrips'] = 'Com a mínim has de seleccionar una franja';
 $string['notaccessesfound'] = 'Els usuaris seleccionats no han accedit entre les dates seleccionades';
 $string['pluginname'] = 'Monitoratge d\'accessos';
+$string['tabledata'] = 'Taula de dades, {$a}';
 $string['title'] = 'Monitoratge d\'accessos';
 $string['titlecourseslist'] = 'Selecciona cursos i usuaris';
 $string['titleresults'] = 'Resultats';
 $string['titleselectstrips'] = 'Selecciona dates i franges';
 $string['titleuserslist'] = 'Selecciona usuaris i cursos';
 $string['totime'] = 'Fins a';
-$string['wrongdates'] = 'comprova la franja número $a';
+$string['wrongdates'] = 'comprova la franja número {$a}';
 

@@ -8,7 +8,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
 
     public function definition() {
 
-        global $CFG, $SESSION, $OUTPUT;
+        global $CFG, $SESSION, $OUTPUT, $PAGE;
 
         $nstrips = 3;
 
@@ -25,22 +25,18 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
 
         for ($stripid = 1; $stripid <= $nstrips; $stripid++) {
 
-            // Javascript to toggle the strips
-            $togglejs = 'elementToggleHide(this,
-                                           false,
-                                           function (el) {return document.getElementById(\'dates_'.$stripid.'\');},
-                                           '.' \''.get_string("show").'\',
-                                           \''.get_string("hide").'\');';
+            $minusicon = $OUTPUT->pix_url('t/switch_minus');
+            $plusicon = $OUTPUT->pix_url('t/switch_plus');
 
             // Show or hide by default
             $class = '';
             $stripchecked = 'checked="checked"';
-            $hideshowimage = $OUTPUT->pix_url('t/switch_minus');
+            $hideshowimage = $minusicon;
             $hideshowalt = get_string('hide');
             if (empty($SESSION->monitoraccessesreport->strips[$stripid])) {
                 $class = 'hidden';
                 $stripchecked = '';
-                $hideshowimage = $OUTPUT->pix_url('t/switch_plus');
+                $hideshowimage = $plusicon;
                 $hideshowalt = get_string('show');
             }
 
@@ -51,7 +47,6 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
             $hideshowdiv = '<div class="monitoraccesses_stripcommandshowhide">
                             <input type="image" src="'.$hideshowimage.'" '.
                             'id="togglehide_'.$stripid.'" '.
-                            'onclick="'.$togglejs.'return false;" '.
                             'alt="'.$hideshowalt.'" title="'.$hideshowalt.'" class="hide-show-image monitoraccesses_button" />
                             </div>';
             $this->_form->addElement('html', $hideshowdiv);
@@ -110,9 +105,9 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
                     $this->_form->addElement('html', '</tr><tr>');
                 }
 
+                $monthid = $stripid . '_' . $year . '_' . $month;
                 $calendarhtml = userdate(mktime('00', '00', '00', $month, '15', $year), get_string('strftimemonthyear'));
-                $calendarhtml.= ' <input type="checkbox"
-                                  onclick="toggle_month(this, \''.$stripid.'\', \''.$year.'\', \''.$month.'\');"
+                $calendarhtml.= ' <input type="checkbox" class="monitoraccesses-month" id="' . $monthid . '"
                                   title="'.get_string("checkall", "report_monitoraccesses").'" />';
                 $calendarhtml.= $this->calendar_get_mini($stripid, $month, $year, $stripchecked);
                 $this->_form->addElement('html', '<td class="monitoraccesses_calendar">'.$calendarhtml.'</td>');
@@ -124,10 +119,20 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
             $this->_form->addElement('html', '<br/></div></div>');
         }
 
+        // The required JS.
+        $PAGE->requires->yui_module(
+            'moodle-report_monitoraccesses-selectstrips',
+            'M.report_monitoraccesses.init_selectstrips',
+            array(array('nstrips' => $nstrips, 'minusicon' => $minusicon->out(), 'plusicon' => $plusicon->out()))
+        );
+        $PAGE->requires->strings_for_js(
+            array('show', 'hide'), 'moodle');
+
         // Submit button
         $this->_form->addElement('submit', 'submitstrips', get_string('showresults', 'report_monitoraccesses'));
 
         $this->_form->addElement('hidden', 'action', 'results');
+        $this->_form->setType('action', PARAM_ALPHA);
     }
 
 
@@ -166,7 +171,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
         global $CFG, $USER, $SESSION;
 
         $display = new stdClass;
-        $display->minwday = get_user_preferences('calendar_startwday', CALENDAR_STARTING_WEEKDAY);
+        $display->minwday = get_user_preferences('calendar_startwday', CALENDAR_DEFAULT_STARTING_WEEKDAY);
         $display->maxwday = $display->minwday + 6;
 
         $content = '';
@@ -217,7 +222,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
         $days_title = array('sunday','monday','tuesday','wednesday','thursday','friday','saturday');
 
         $summary = get_string('calendarheading', 'calendar', userdate(make_timestamp($y, $m), get_string('strftimemonthyear')));
-        $summary = get_string('tabledata', 'access', $summary);
+        $summary = get_string('tabledata', 'report_monitoraccesses', $summary);
         $content .= '<table class="minicalendar" summary="'.$summary.'">'; // Begin table
         $content .= '<tr class="weekdays">'; // Header row: day names
 
@@ -252,7 +257,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
 
             // Weekend or not
             $cell = '';
-            if (CALENDAR_WEEKEND & (1 << ($dayweek % 7))) {
+            if (CALENDAR_DEFAULT_WEEKEND & (1 << ($dayweek % 7))) {
                 $class = 'weekend day';
             } else {
                 $class = 'day';
