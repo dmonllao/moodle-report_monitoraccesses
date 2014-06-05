@@ -5,52 +5,12 @@ YUI.add('moodle-report_monitoraccesses-selectstrips', function(Y) {
     };
     Y.extend(SELECTSTRIPS, Y.Base, {
 
-        plusicon: '',
-        minusicon: '',
-
         initializer: function(config) {
-
-            this.plusicon = config.plusicon;
-            this.minusicon = config.minusicon;
-
-            // Set toggle to strips.
-            for (var nstrip = 1; nstrip <= config.nstrips; nstrip++) {
-                var strip = Y.one('#togglehide_' + nstrip);
-                strip.on('click', this.toggle_strip, this);
-            }
 
             // Set toggle to months.
             Y.all('.monitoraccesses-month').on('click', function(e) {
                 this.toggle_month(e.currentTarget);
             }, this);
-        },
-
-        // Toggles a strip.
-        toggle_strip: function(e) {
-
-            var stripid = e.currentTarget.get('id');
-            var dates = Y.one('#' + stripid.replace('togglehide', 'dates'));
-
-            // Toggle dates.
-            if (dates.hasClass('hidden')) {
-                dates.removeClass('hidden');
-
-                // Change alt and image.
-                e.currentTarget.setAttribute('alt', M.util.get_string('hide', 'moodle'));
-                e.currentTarget.setAttribute('title', M.util.get_string('hide', 'moodle'));
-                e.currentTarget.setAttribute('src', this.minusicon);
-
-            } else {
-                dates.addClass('hidden');
-
-                // Change alt and image.
-                e.currentTarget.setAttribute('alt', M.util.get_string('show', 'moodle'));
-                e.currentTarget.setAttribute('title', M.util.get_string('show', 'moodle'));
-                e.currentTarget.setAttribute('src', this.plusicon);
-
-            }
-
-            e.preventDefault();
         },
 
         toggle_month: function(element) {
@@ -95,12 +55,7 @@ YUI.add('moodle-report_monitoraccesses-selectstrips', function(Y) {
         }
 
     }, {
-            NAME: 'moodle-report_monitoraccesses-selectstrips',
-            ATTRS: {
-                nstrips: {},
-                plusicon: {},
-                minusicon: {}
-            }
+            NAME: 'moodle-report_monitoraccesses-selectstrips'
         });
 
         M.report_monitoraccesses = M.report_monitoraccesses || {};
