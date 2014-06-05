@@ -131,12 +131,13 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
             foreach ($SESSION->monitoraccessesreport->users as $userid) {
 
-                // Getting data ordered by time to improve the iteration time
-                $sql = "SELECT l.id, l.time, l.action, l.course FROM {$CFG->prefix}log l
+                $userlogs = array();
+
+                // Getting user actions ordered by time to improve the iteration time.
+                $sql = "SELECT l.id, l.time FROM {$CFG->prefix}log l
                         WHERE l.userid = '$userid' AND l.course IN ($selectedcourses)
                         AND l.time > '{$first->from}' AND l.time < '{$last->to}'
                         ORDER BY l.time ASC";
-                        var_dump($sql);
                 if (!$logs = $DB->get_records_sql($sql)) {
                     continue;
                 }
@@ -145,57 +146,51 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                 $date = reset($selectedranges);
                 do {
 
-                    unset($sessioninit);
-
-                    // We need to keep track of the last log to check against the session timeout.
-                    unset($lastlog);
-
                     // Really heavy iteration, better to force PHP to work than the database.
                     foreach ($logs as $log) {
 
-                        $action = $log->action;
-
+                        // If it is inside a requested time range (this is the start & end dates + each
+                        // of the selected days in the calendar, so quite a lot).
                         if ($log->time > $date->from && $log->time < $date->to) {
 
-                            // First log counts as initial login.
-                            if (empty($sessioninit)) {
-                                $sessioninit = $log->time;
-                                $accesses[$userid][$sessioninit]->login = $log->time;
-
-                                // We store the first log also as the last one.
-                                $accesses[$userid][$sessioninit]->logout = $log->time;
-                                $lastlog = $log->time;
-                            }
-
-                            // If the action is logout new register and unset $sessioninit to create a new one.
-                            if ($action === 'logout') {
-                                // Marking it as the last one.
-                                $accesses[$userid][$sessioninit]->logout = $log->time;
-                                unset($sessioninit);
-                            }
-
-                            // Check site timeout setting to consider the session as closed if there is
-                            // too much difference between logs.
-                            if (!empty($lastlog) && $lastlog + $CFG->sessiontimeout < $log->time) {
-                                unset($sessioninit);
-                            }
-
-                            // Only if $sessioninit has not been reset.
-                            if (!empty($sessioninit)) {
-
-                                // This is the last log at the moment, so it counts as logout
-                                // it will be overwriten by the next log if it is not a log out
-                                // nor the session time expired.
-                                $accesses[$userid][$sessioninit]->logout = $log->time;
-                                $lastlog = $log->time;
-                            }
+                            // Yes, we add the restriction of 1 action per second, but
+                            // this tool purpose is a usage follow-up so it does not
+                            // matter if they were 2 action in the same second.
+                            $userlogs[$log->time] = $log;
                         }
                     }
 
                     // Getting the next strip.
                     $date = next($selectedranges);
 
-               } while ($date);
+                } while ($date);
+
+                // Splitting the user logs in different accesses to the course.
+                // We base this "split" in the system timeout value.
+                // They are already ordered by time.
+                unset($rangefirstlog);
+                unset($rangelastlog);
+                foreach ($userlogs as $time => $userlog) {
+
+                    // If since the range last log passed more than TIMEOUT
+                    // seconds we will start a new range.
+                    if (!empty($rangelastlog) && ($rangelastlog + $CFG->sessiontimeout) < $time) {
+                        unset($rangefirstlog);
+                        unset($rangelastlog);
+                    }
+
+                    // A new set of logs.
+                    if (empty($rangefirstlog)) {
+                        $rangefirstlog = $time;
+                        $accesses[$userid][$rangefirstlog] = new stdClass();
+                        $accesses[$userid][$rangefirstlog]->firstlog = $time;
+                    }
+
+                    $accesses[$userid][$rangefirstlog]->lastlog = $time;
+
+                    // Keep track of the last log inside this range.
+                    $rangelastlog = $time;
+                }
             }
 
             $this->bus = $accesses;
@@ -250,7 +245,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         $outputheader.= $OUTPUT->user_picture($user).' '.$user->firstname.' '.$user->lastname;
 
 
-        // Print div with the user logins
+        // Print div with the user connections (previously splitted in process()).
         $totaltime = 0;
         $outputdates = '<div id="togglecontents_'.$user->id.'" class="hidden">';
 
@@ -263,12 +258,12 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         $table->align = array('left', 'center', 'center', 'center');
         foreach ($userdata as $date) {
 
-            $table->data[$row][0] = date('d-m-Y', $date->login);
-            $table->data[$row][1] = date('H:i', $date->login);
-            $table->data[$row][2] = date('H:i', $date->logout);
-            $table->data[$row][3] = gmdate('H:i', $date->logout - $date->login);
+            $table->data[$row][0] = date('d-m-Y', $date->firstlog);
+            $table->data[$row][1] = date('H:i', $date->firstlog);
+            $table->data[$row][2] = date('H:i', $date->lastlog);
+            $table->data[$row][3] = gmdate('H:i', $date->lastlog - $date->firstlog);
 
-            $totaltime = $totaltime + ($date->logout - $date->login);
+            $totaltime = $totaltime + ($date->lastlog - $date->firstlog);
             $row++;
         }
 
@@ -276,7 +271,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         $outputdates.= '</div>';
 
 
-        // Adding the total sum (format H:i, Nº jours)
+        // Adding the total sum (format H:i, number of days)
         $dateformat = 'H:i';
         $daysstr = '';
         $daysoriginal = get_string("daydays", "report_monitoraccesses");
