@@ -8,7 +8,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
 
     public function definition() {
 
-        global $CFG, $SESSION;
+        global $CFG, $SESSION, $OUTPUT;
 
         $nstrips = 3;
 
@@ -35,12 +35,12 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
             // Show or hide by default
             $class = '';
             $stripchecked = 'checked="checked"';
-            $hideshowimage = $CFG->pixpath.'/t/switch_minus.gif';
+            $hideshowimage = $OUTPUT->pix_url('t/switch_minus');
             $hideshowalt = get_string('hide');
             if (empty($SESSION->monitoraccessesreport->strips[$stripid])) {
                 $class = 'hidden';
                 $stripchecked = '';
-                $hideshowimage = $CFG->pixpath.'/t/switch_plus.gif';
+                $hideshowimage = $OUTPUT->pix_url('t/switch_plus');
                 $hideshowalt = get_string('show');
             }
 
