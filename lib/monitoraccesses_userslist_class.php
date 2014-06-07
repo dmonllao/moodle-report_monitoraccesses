@@ -41,12 +41,7 @@ class monitoraccesses_userslist_class extends monitoraccesses_class {
         // The user value must show the picture
         if ($data) {
             foreach ($data as $key => $user) {
-
-                $div = '<div class="monitoraccesses_user">';
-                $div.= $user->firstname.' '.$user->lastname.' '.$OUTPUT->user_picture($user);
-                $div.= '</div>';
-
-                $data[$key]->value = $div;
+                $data[$key]->value = $OUTPUT->user_picture($user) . ' ' . fullname($user);
             }
         }
 

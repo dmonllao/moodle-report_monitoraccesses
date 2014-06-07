@@ -34,7 +34,7 @@ abstract class monitoraccesses_form_class extends moodleform {
 
                 // Adding the element to $this->_form
                 $elementkey = $keyprefix.'_'.$element->id;
-                $this->_form->addElement('checkbox', $elementkey, $element->value, null, $attrs);
+                $this->_form->addElement('checkbox', $elementkey, null, $element->value, $attrs);
 
                 if (!empty($SESSION->monitoraccessesreport->{$storedprefix}[$element->id])) {
                     $this->_form->setDefault($elementkey, 1);
