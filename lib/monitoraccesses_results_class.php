@@ -138,7 +138,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                 // Getting user actions ordered by time to improve the iteration time.
                 $sql = "SELECT l.id, l.time FROM {$CFG->prefix}log l
                         WHERE l.userid = '$userid' AND l.course IN ($selectedcourses)
-                        AND l.time > '{$first->from}' AND l.time < '{$last->to}'
+                        AND l.time >= '{$first->from}' AND l.time <= '{$last->to}'
                         ORDER BY l.time ASC";
                 if (!$logs = $DB->get_records_sql($sql)) {
                     continue;
@@ -153,7 +153,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
 
                         // If it is inside a requested time range (this is the start & end dates + each
                         // of the selected days in the calendar, so quite a lot).
-                        if ($log->time > $date->from && $log->time < $date->to) {
+                        if ($log->time >= $date->from && $log->time <= $date->to) {
 
                             // Yes, we add the restriction of 1 action per second, but
                             // this tool purpose is a usage follow-up so it does not
@@ -188,7 +188,7 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                         $accesses[$userid][$rangefirstlog]->firstlog = $time;
                     }
 
-                    $accesses[$userid][$rangefirstlog]->lastlog = $time;
+                    $accesses[$userid][$rangefirstlog]->lastlog = $time + $CFG->sessiontimeout;
 
                     // Keep track of the last log inside this range.
                     $rangelastlog = $time;
