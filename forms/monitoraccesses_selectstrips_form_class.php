@@ -89,7 +89,7 @@ class monitoraccesses_selectstrips_form_class extends monitoraccesses_form_class
                 }
             }
 
-            $this->_form->addElement('html', '<br/><br/><table><tr>');
+            $this->_form->addElement('html', '<br/><br/><table class="calendartable"><tr>');
 
             // 12 months from this month
             $year = $initialyear;
