@@ -1,4 +1,6 @@
-<?php // $Id$
+<?php
+
+require_once($CFG->dirroot . '/report/monitoraccesses/lib/monitoraccesses_class.php');
 
 class monitoraccesses_results_class extends monitoraccesses_class {
 
