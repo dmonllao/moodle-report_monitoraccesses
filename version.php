@@ -11,6 +11,6 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->version  = 2014060400;
-$plugin->requires = 2013050100;
+$plugin->requires = 2012120300;   // Moodle 2.4.0
 $plugin->component = 'report_monitoraccesses';
 
