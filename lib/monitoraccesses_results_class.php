@@ -49,8 +49,8 @@ class monitoraccesses_results_class extends monitoraccesses_class {
                 // Only store it if the strip it's enabled
                 if (!empty($SESSION->monitoraccessesreport->strips[$date[1]])) {
 
-                    // mktime because we must add the user GMT
-                    $datetimestamp = mktime('00', '00', '00', intval($date[3]), intval($date[4]), intval($date[2]));
+                    // Using the user timezone.
+                    $datetimestamp = usertime(gmmktime('00', '00', '00', intval($date[3]), intval($date[4]), intval($date[2])));
                     $SESSION->monitoraccessesreport->strips[$date[1]]->dates[$datetimestamp] = $datetimestamp;
                 }
             }
@@ -260,9 +260,11 @@ class monitoraccesses_results_class extends monitoraccesses_class {
         $table->align = array('left', 'center', 'center', 'center');
         foreach ($userdata as $date) {
 
+            $firstlog = usergetdate($date->firstlog);
+            $lastlog = usergetdate($date->lastlog);
             $table->data[$row][0] = date('d-m-Y', $date->firstlog);
-            $table->data[$row][1] = date('H:i', $date->firstlog);
-            $table->data[$row][2] = date('H:i', $date->lastlog);
+            $table->data[$row][1] = $firstlog['hours'] . ':' . $firstlog['minutes'];
+            $table->data[$row][2] = $lastlog['hours'] . ':' . $lastlog['minutes'];
             $table->data[$row][3] = gmdate('H:i', $date->lastlog - $date->firstlog);
 
             $totaltime = $totaltime + ($date->lastlog - $date->firstlog);
