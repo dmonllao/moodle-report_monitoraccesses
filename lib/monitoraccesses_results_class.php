@@ -263,8 +263,10 @@ class monitoraccesses_results_class extends monitoraccesses_class {
             $firstlog = usergetdate($date->firstlog);
             $lastlog = usergetdate($date->lastlog);
             $table->data[$row][0] = date('d-m-Y', $date->firstlog);
-            $table->data[$row][1] = $firstlog['hours'] . ':' . $firstlog['minutes'];
-            $table->data[$row][2] = $lastlog['hours'] . ':' . $lastlog['minutes'];
+            $table->data[$row][1] = str_pad($firstlog['hours'], 2, 0, STR_PAD_LEFT) . ':' .
+                str_pad($firstlog['minutes'], 2, 0, STR_PAD_LEFT);
+            $table->data[$row][2] = str_pad($lastlog['hours'], 2, 0, STR_PAD_LEFT) . ':' .
+                str_pad($lastlog['minutes'], 2, 0, STR_PAD_LEFT);
             $table->data[$row][3] = gmdate('H:i', $date->lastlog - $date->firstlog);
 
             $totaltime = $totaltime + ($date->lastlog - $date->firstlog);
